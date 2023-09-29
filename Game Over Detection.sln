@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34031.279
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game Over Detection", "Game Over Detection\Game Over Detection.vcxproj", "{519B0BD6-72BB-4F26-9516-66F69D4F011B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{519B0BD6-72BB-4F26-9516-66F69D4F011B}.Debug|x64.ActiveCfg = Debug|x64
+		{519B0BD6-72BB-4F26-9516-66F69D4F011B}.Debug|x64.Build.0 = Debug|x64
+		{519B0BD6-72BB-4F26-9516-66F69D4F011B}.Debug|x86.ActiveCfg = Debug|Win32
+		{519B0BD6-72BB-4F26-9516-66F69D4F011B}.Debug|x86.Build.0 = Debug|Win32
+		{519B0BD6-72BB-4F26-9516-66F69D4F011B}.Release|x64.ActiveCfg = Release|x64
+		{519B0BD6-72BB-4F26-9516-66F69D4F011B}.Release|x64.Build.0 = Release|x64
+		{519B0BD6-72BB-4F26-9516-66F69D4F011B}.Release|x86.ActiveCfg = Release|Win32
+		{519B0BD6-72BB-4F26-9516-66F69D4F011B}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3551E8EE-CE4F-4370-B91F-760EE62E292A}
+	EndGlobalSection
+EndGlobal
