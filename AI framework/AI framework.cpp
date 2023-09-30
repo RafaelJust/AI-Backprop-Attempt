@@ -2,7 +2,7 @@
 #include <vector>
 using namespace std;
 
-int layers[] = {3,5,5,3};
+vector<int> layers {3,5,5,3};
 
 class Neuron
 {
@@ -14,15 +14,14 @@ public:
 		cout << "Neuron created with weight " << w << "\n";
 	};
 
-	int GetOutput(int inputs[])
+	int GetOutput(vector<int> inputs)
 	{
 		//calculate wether the neuron will fire or not
 		int total = 0;
 		//add all the weights into the total function
-		for (int i = 0; i < sizeof(inputs); i++)
+		for (int i : inputs)
 		{
-			int w = inputs[i];
-			total += w;
+			total += i;
 		}
 		//calculate wether the neuron will fire or not
 		int result = 0;
@@ -54,18 +53,27 @@ public:
 	vector<vector<Neuron>> neurons;
 	Network()
 	{
+		neurons.resize(layers.size());
 		//initialize network
-		neurons.resize(sizeof(layers));
-		for (int i = 0; i < neurons.size(); i++)
+		for (int layer = 0; layer < layers.size(); layer++)
 		{
-			cout << "[" << i << "]";
-			neurons[i].assign(layers[i], Neuron(rand())); //Create a single layer with random weights
+			neurons[layer] = vector<Neuron>(layers[layer], Neuron(rand()));
 		}
+		cout << "Network ready to go!";
 	};
+	vector<int> GetOutput(vector<int> Input)
+	{
+		for (vector<Neuron> n : neurons)
+		{
+
+		}
+	}
 };
 
 int main()
 {
 	cout << "Start\n";
 	Network AI;
+	vector<int> i {1,2,3,7,4,34536,8934};
+
 }
