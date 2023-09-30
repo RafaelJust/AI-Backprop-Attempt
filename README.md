@@ -1,1 +1,1 @@
-# Game Over Detection
+# AI framework

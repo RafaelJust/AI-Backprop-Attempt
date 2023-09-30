@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Game Over Detection.cpp">
+    <ClCompile Include="AI framework.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
