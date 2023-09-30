@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game Over Detection", "Game Over Detection\Game Over Detection.vcxproj", "{519B0BD6-72BB-4F26-9516-66F69D4F011B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AI framework", "AI framework\AI framework.vcxproj", "{519B0BD6-72BB-4F26-9516-66F69D4F011B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
