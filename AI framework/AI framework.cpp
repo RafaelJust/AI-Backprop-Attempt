@@ -30,14 +30,8 @@ public:
 		{
 			total += i;
 		}
-		if (total >= 1)
-		{
-			return weight;
-		}
-		else
-		{
-			return 0;
-		}
+		cout << "Firing neuron with total of " << total << ", and value " << (1 / (1 + exp(-total))) * weight << "\n";
+		return (1 / (1 + exp(-total))) * weight; 
 	}
 };
 
@@ -88,10 +82,14 @@ int main()
 	cout << "Start\n";
 	Network AI;
 	vector<double> i;
-	for (int x = 0; x < 20; x++)
+	//Input custom inut for testing
+	int A;
+	cin >> A;
+	for (int x = 0; x < A + 1; x++)
 	{
-		i.push_back(distribution(generator));
-		cout << " " << i.back();
+		double inp;
+		cin >> inp;
+		i.push_back(inp);
 	}
 	cout << "\nAI gives output of";
 	vector<double> o = AI.GetOutput(i);
