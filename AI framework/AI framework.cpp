@@ -1,51 +1,45 @@
 #include <iostream>
+#include <random>
 #include <vector>
 using namespace std;
 
-vector<int> layers {3,5,5,3,4}; //last layer is output layer
+vector<int> layers {8,20,32,64,64,64,32,4}; //last layer is output layer
+float Alpha; //The discount factor, used to determine
+
+
+//Setup of the random generator
+default_random_engine generator;
+uniform_real_distribution<double> distribution(-1, 1);
 
 class Neuron
 {
 public:
-	int weight;
-	Neuron(int w) //initialisation of the neuron
+	double weight;
+	Neuron(double w) //initialisation of the neuron
 	{
 		weight = w;
 		cout << "Neuron created with weight " << w << "\n";
 	};
 
-	int Fire(vector<int> inputs)
+	double Fire(vector<double> inputs)
 	{
 		//calculate wether the neuron will fire or not
-		int total = 0;
+		double total = 0;
 		//add all the weights into the total function
-		for (int i : inputs)
+		for (double i : inputs)
 		{
 			total += i;
 		}
-		//calculate wether the neuron will fire or not
-		int result = 0;
-		if (total > (RAND_MAX / 2))
+		if (total >= 1)
 		{
-			result = weight;
+			return weight;
 		}
-		return result;
+		else
+		{
+			return 0;
+		}
 	}
 };
-
-int getLargestNumber(int list[])
-{
-	//Go through every entry in an array and return the index of the largest one
-	int Largest = 0;
-	for (int i = 0; i < sizeof(list); i++)
-	{
-		if (list[i] > list[Largest])
-		{
-			Largest = i;
-		}
-	}
-	return Largest;
-}
 
 class Network
 {
@@ -60,15 +54,15 @@ public:
 			//Create a random value for each neuron
 			for (int n = 0; n < layers[layer]; n++)
 			{
-				neurons[layer].push_back(Neuron(rand()));
+				neurons[layer].push_back(Neuron(distribution(generator)));
 			}
 		}
 		cout << "Network ready to go!\n";
 	};
-	vector<int> GetOutput(vector<int> Input)
+	vector<double> GetOutput(vector<double> Input)
 	{
-		vector<int> previous = Input;
-		vector<int> Curr;
+		vector<double> previous = Input;
+		vector<double> Curr;
 
 		for (vector<Neuron> layer : neurons)
 		{
@@ -82,16 +76,26 @@ public:
 		}
 		return Curr;
 	}
+
+	void Learn(vector<int> Error)
+	{
+
+	}
 };
 
 int main()
 {
 	cout << "Start\n";
 	Network AI;
-	vector<int> i {1,2,3,7,4,34536,8934};
-	cout << "AI gives output of";
-	vector<int> o = AI.GetOutput(i);
-	for (int x : o)
+	vector<double> i;
+	for (int x = 0; x < 20; x++)
+	{
+		i.push_back(distribution(generator));
+		cout << " " << i.back();
+	}
+	cout << "\nAI gives output of";
+	vector<double> o = AI.GetOutput(i);
+	for (double x : o)
 	{
 		cout << " " << x;
 	}
