@@ -14,41 +14,61 @@ uniform_real_distribution<double> distribution(-1, 1);
 class Neuron
 {
 public:
-	double weight;
-	Neuron(double w) //initialisation of the neuron
+	vector<double> weights;
+	double bias;
+	Neuron(int LastLayerSize, double b) //initialisation of the neuron
 	{
-		weight = w;
-		cout << "Neuron created with weight " << w << "\n";
+		//generate random weights
+		for (int i = 0; i < LastLayerSize; i++)
+		{
+			weights.push_back(distribution(generator));
+		}
+
+		bias = b;
+		cout << "Neuron created with bias " << b << "\n";
 	};
 
 	double Fire(vector<double> inputs)
 	{
-		//calculate wether the neuron will fire or not
+		//add all the weights and previous outputs into the total function
 		double total = 0;
-		//add all the weights into the total function
-		for (double i : inputs)
+		for (double i : inputs) 
 		{
-			total += i;
+			total += i * weights[i];
 		}
-		cout << "Firing neuron with total of " << total << ", and value " << (1 / (1 + exp(-total))) * weight << "\n";
-		return (1 / (1 + exp(-total))) * weight; 
+
+		total += bias;
+
+		cout << "Firing neuron with total of " << total << ", and value " << (1 / (1 + exp(-total))) << "\n";
+		return (1 / (1 + exp(-total))); //Use a sigmoid function to generate an output.
 	}
 };
+
+vector<double> Substract(vector<double> first, vector<double> second)
+{
+	vector<double> result;
+	//Per-element substraction
+	for (int i = 0; i < first.size(); i++) //Both vectors must be the same
+	{
+		result[i] = first[i] - second[i];
+	}
+	return result;
+}
 
 class Network
 {
 public:
-	vector<vector<Neuron>> neurons;
+	vector<vector<Neuron>> netw;
 	Network()
 	{
-		neurons.resize(layers.size());
+		netw.resize(layers.size());
 		//initialize network
 		for (int layer = 0; layer < layers.size(); layer++)
 		{
 			//Create a random value for each neuron
 			for (int n = 0; n < layers[layer]; n++)
 			{
-				neurons[layer].push_back(Neuron(distribution(generator)));
+				netw[layer].push_back(Neuron(distribution(generator), distribution(generator)));
 			}
 		}
 		cout << "Network ready to go!\n";
@@ -58,7 +78,7 @@ public:
 		vector<double> previous = Input;
 		vector<double> Curr;
 
-		for (vector<Neuron> layer : neurons)
+		for (vector<Neuron> layer : netw)
 		{
 			//fill in the current vector with the outputs of the neurons in that layer
 			Curr.clear();
@@ -71,9 +91,31 @@ public:
 		return Curr;
 	}
 
-	void Learn(vector<int> Error)
+	void Learn(vector<double> Calculated, vector<double> target)
 	{
+		//Reverse the network temporarily
+		reverse(netw.begin(), netw.end());
 
+		//Output layer
+		//Get the derivatives
+		vector<double> d_error = Substract(Calculated, target);
+		vector<double> d_activation;
+		vector<double> d_weights_output;
+		vector<double> d_bias_output;
+
+		for (double out : Calculated) //d_activation
+		{
+			d_activation.push_back(out * (1 - out));
+		}
+
+		vector<double> 
+
+		//hidden layers
+		bool first = true;
+		for (vector<Neuron> CurrentLayer : netw)
+		{
+			if (first) { first = false; continue; } //skip the first layer, as it is the output layer
+		}
 	}
 };
 
