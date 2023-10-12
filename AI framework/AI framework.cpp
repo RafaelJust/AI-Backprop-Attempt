@@ -16,6 +16,7 @@ class Neuron
 public:
 	vector<double> weights;
 	double bias;
+	double Last_output;
 	Neuron(int LastLayerSize, double b) //initialisation of the neuron
 	{
 		//generate random weights
@@ -25,6 +26,7 @@ public:
 		}
 
 		bias = b;
+		Last_output = 0;
 		cout << "Neuron created with bias " << b << "\n";
 	};
 
@@ -38,9 +40,9 @@ public:
 		}
 
 		total += bias;
-
-		cout << "Firing neuron with total of " << total << ", and value " << (1 / (1 + exp(-total))) << "\n";
-		return (1 / (1 + exp(-total))); //Use a sigmoid function to generate an output.
+		Last_output = (1 / (1 + exp(-total)));
+		cout << "Firing neuron with total of " << total << ", and value " << Last_output << "\n";
+		return Last_output; //Use a sigmoid function to generate an output.
 	}
 };
 
@@ -52,6 +54,51 @@ vector<double> Substract(vector<double> first, vector<double> second)
 	{
 		result[i] = first[i] - second[i];
 	}
+
+	return result;
+}
+
+vector<double> Multiply(vector<double> first, vector<double> second)
+{
+	vector<double> result;
+	if (sizeof(first) == sizeof(second))
+	{
+		//use Per-element multiplication for faster calculation
+		for (int i = 0; i < first.size(); i++)
+		{
+			result[i] = first[i] * second[i];
+		}
+	}
+	else //vectors are not the same
+	{
+		vector<vector<double>> operands = { first,second }; //Use for easier handling
+		int smaller;
+		smaller = (min(sizeof(first), sizeof(second)) == sizeof(second)); //get the smallest vector
+
+		//multiply each value of the larger vector with all the values of the smaller ones
+		for (double a : operands[!smaller])
+		{
+			for (double product : operands[smaller]) // !smaller changes 0 to 1, and 1 to 0
+			{
+				a *= product;
+			}
+		}
+		
+		result = operands[!smaller]; //make the multiplicated vector the result
+	}
+	
+	return result;
+}
+
+vector<double> GetLastActivations(vector<Neuron> neurons)
+{
+	vector<double> result;
+	//Get the last output of all the neurons int the vector and add them to a list
+	for (Neuron n : neurons)
+	{
+		result.push_back(n.Last_output);
+	}
+
 	return result;
 }
 
@@ -101,14 +148,21 @@ public:
 		vector<double> d_error = Substract(Calculated, target);
 		vector<double> d_activation;
 		vector<double> d_weights_output;
-		vector<double> d_bias_output;
+		vector<double> d_biases_output;
 
 		for (double out : Calculated) //d_activation
 		{
 			d_activation.push_back(out * (1 - out));
 		}
 
-		vector<double> 
+		vector<double> delta_output = Multiply(d_error, d_activation);
+
+		//Calculate the gradients of the weights (d_weights_output) and biases (d_biases_output) of the output layer.
+		d_biases_output = delta_output;
+
+		//The gradients are calculated by multiplying the delta_output with the activations of the previous layer (activation_previous_layer)
+		vector<double> activation_previous_layer = GetLastActivations(netw[1]);
+		d_weights_output = Multiply(delta_output, activation_previous_layer);
 
 		//hidden layers
 		bool first = true;
@@ -124,7 +178,7 @@ int main()
 	cout << "Start\n";
 	Network AI;
 	vector<double> i;
-	//Input custom inut for testing
+	//Input custom input for testing
 	int A;
 	cin >> A;
 	for (int x = 0; x < A + 1; x++)
