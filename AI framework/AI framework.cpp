@@ -2,11 +2,12 @@
 #include "Network.h"
 using namespace std;
 
+vector<int> layers{ 8,20,32,64,64,64,32,4 }; //last layer is output layer
 
 int main()
 {
 	cout << "Start\n";
-	Network AI;
+	Network AI(layers);
 	vector<double> i;
 	//Input custom input for testing
 	int A;

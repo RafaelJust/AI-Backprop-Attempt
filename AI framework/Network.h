@@ -1,10 +1,9 @@
 #include <iostream>
 #include <random>
 #include <vector>
-using namespace std;
+#include "Vector math.h"
 
-vector<int> layers {8,20,32,64,64,64,32,4}; //last layer is output layer
-float Alpha; //The discount factor, used to determine
+using namespace std;
 
 
 //Setup of the random generator
@@ -48,54 +47,10 @@ double Neuron::Fire(vector<double> inputs)
 	return Last_output; //Use a sigmoid function to generate an output.
 }
 
-vector<double> Substract(vector<double> first, vector<double> second)
-{
-	vector<double> result;
-	//Per-element substraction
-	for (int i = 0; i < first.size(); i++) //Both vectors must be the same
-	{
-		result[i] = first[i] - second[i];
-	}
-
-	return result;
-}
-
-vector<double> Multiply(vector<double> first, vector<double> second)
-{
-	vector<double> result;
-	if (sizeof(first) == sizeof(second))
-	{
-		//use Per-element multiplication for faster calculation
-		for (int i = 0; i < first.size(); i++)
-		{
-			result[i] = first[i] * second[i];
-		}
-	}
-	else //vectors are not the same
-	{
-		vector<vector<double>> operands = { first,second }; //Use for easier handling
-		int smaller;
-		smaller = (min(sizeof(first), sizeof(second)) == sizeof(second)); //get the smallest vector
-
-		//multiply each value of the larger vector with all the values of the smaller ones
-		for (double a : operands[!smaller])
-		{
-			for (double product : operands[smaller]) // !smaller changes 0 to 1, and 1 to 0
-			{
-				a *= product;
-			}
-		}
-		
-		result = operands[!smaller]; //make the multiplicated vector the result
-	}
-	
-	return result;
-}
-
 vector<double> GetLastActivations(vector<Neuron> neurons)
 {
 	vector<double> result;
-	//Get the last output of all the neurons int the vector and add them to a list
+	//Get the last output of all the neurons in the vector and add them to a list
 	for (Neuron n : neurons)
 	{
 		result.push_back(n.Last_output);
@@ -108,7 +63,7 @@ class Network
 {
 public:
 	vector<vector<Neuron>> netw;
-	Network()
+	Network(vector<int> layers)
 	{
 		netw.resize(layers.size());
 		//initialize network

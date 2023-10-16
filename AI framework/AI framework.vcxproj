@@ -130,6 +130,9 @@
     <ClCompile Include="AI framework.cpp" />
     <ClCompile Include="Network.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Vector math.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
