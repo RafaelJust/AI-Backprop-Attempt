@@ -5,7 +5,6 @@
 
 using namespace std;
 
-
 //Setup of the random generator
 default_random_engine generator;
 uniform_real_distribution<double> distribution(-1, 1);
@@ -62,13 +61,13 @@ vector<double> GetLastActivations(vector<Neuron> neurons)
 class Network
 {
 private:
-	float LearningRate;
+	double LearningRate;
 	bool reversed = false;
 public:
 	vector<vector<Neuron>> netw;
 	void SetReversed(bool rev);
 
-	Network(vector<int> layers, float e)
+	Network(vector<int> layers, double e)
 	{
 		netw.resize(layers.size());
 		//initialize network
