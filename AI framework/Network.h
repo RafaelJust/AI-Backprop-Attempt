@@ -61,9 +61,14 @@ vector<double> GetLastActivations(vector<Neuron> neurons)
 
 class Network
 {
+private:
+	float LearningRate;
+	bool reversed = false;
 public:
 	vector<vector<Neuron>> netw;
-	Network(vector<int> layers)
+	void SetReversed(bool rev);
+
+	Network(vector<int> layers, float e)
 	{
 		netw.resize(layers.size());
 		//initialize network
@@ -72,9 +77,12 @@ public:
 			//Create a random value for each neuron
 			for (int n = 0; n < layers[layer]; n++)
 			{
-				netw[layer].push_back(Neuron(distribution(generator), distribution(generator)));
+				netw[layer].push_back(Neuron(layers[layer - 1], distribution(generator)));
 			}
 		}
+
+		LearningRate = e;
+
 		cout << "Network ready to go!\n";
 	};
 
@@ -100,36 +108,66 @@ vector<double> Network::GetOutput(vector<double> Input)
 	return Curr;
 }
 
-void Network::Learn(vector<double> Calculated, vector<double> target)
+void Network::Learn(vector<double> inputs, vector<double> target)
 {
-	//Reverse the network temporarily
-	reverse(netw.begin(), netw.end());
-
-	//Output layer
-	//Get the derivatives
-	vector<double> d_error = Substract(Calculated, target);
+	//Set up vecotrs
+	vector<double> Calculated;
+	vector<double> d_error;
 	vector<double> d_activation;
 	vector<double> d_weights_output;
 	vector<double> d_biases_output;
+	vector<double> delta_output;
+	vector<double> activation_previous_layer;
 
-	for (double out : Calculated) //d_activation
-	{
-		d_activation.push_back(out * (1 - out));
-	}
+	SetReversed(true);
 
-	vector<double> delta_output = Multiply(d_error, d_activation);
-
-	//Calculate the gradients of the weights (d_weights_output) and biases (d_biases_output) of the output layer.
-	d_biases_output = delta_output;
-
-	//The gradients are calculated by multiplying the delta_output with the activations of the previous layer (activation_previous_layer)
-	vector<double> activation_previous_layer = GetLastActivations(netw[1]);
-	d_weights_output = Multiply(delta_output, activation_previous_layer);
-
-	//hidden layers
-	bool first = true;
+	//Calculate gradients and adjust values
+	int i = 0;
 	for (vector<Neuron> CurrentLayer : netw)
 	{
-		if (first) { first = false; continue; } //skip the first layer, as it is the output layer
+		SetReversed(false);
+		Calculated = GetOutput(inputs); //Forward propagation
+
+		//get the derivative of the activation (d_activation)
+		for (double out : Calculated)
+		{
+			d_activation.push_back(out * (1 - out));
+		}
+
+		//get the derivative of the error, and multipy it to get the delta of the output
+		d_error = Substract(Calculated, target);
+		delta_output = Multiply(d_error, d_activation);
+
+		//Calculate the gradients of the weights (d_weights_output) and biases (d_biases_output) of the Current layer
+		d_biases_output = delta_output;
+
+		SetReversed(true); //Makes sure the network is reversed, so that the loop goes from the output layer to the input one.
+
+		//get the activation values of the previous layer
+		activation_previous_layer = GetLastActivations(netw[i + 1]);
+
+		//apply the deltas to the current neuron
+		for (int neur = 0; neur < CurrentLayer.size(); neur++)
+		{
+			d_weights_output = Multiply(delta_output, Multiply(activation_previous_layer, CurrentLayer[neur].weights));
+
+			//multiply the biases and weights with the learning rate to make sure to have all the layes adjusted.r
+			CurrentLayer[neur].bias = d_biases_output[neur] * LearningRate;
+			CurrentLayer[neur].weights = Multiply(d_weights_output, (vector<double>)LearningRate);
+		}
+
+		i++;
+	}
+
+	SetReversed(false);
+}
+
+void Network::SetReversed(bool rev)
+{
+	//Reverse the network if it is the wrong way
+	if (reversed != rev)
+	{
+		reverse(netw.begin(), netw.end());
+		reversed = rev;
 	}
 }
