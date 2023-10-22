@@ -35,9 +35,9 @@ double Neuron::Fire(vector<double> inputs)
 {
 	//add all the weights and previous outputs into the total function
 	double total = 0;
-	for (double i : inputs)
+	for (int i = 0; i < inputs.size(); i++)
 	{
-		total += i * weights[i];
+		total += inputs[i] * weights[i];
 	}
 
 	total += bias;
@@ -74,14 +74,18 @@ public:
 		netw.resize(layers.size());
 
 		//initialize network
-		//first layer
-		netw[0].push_back(Neuron(InputSize, distribution(generator)));
+
+		//Create a random value for each input layer neuron
+		for (int n = 0; n < layers[0]; n++)
+		{
+			netw[0].push_back(Neuron(InputSize, distribution(generator)));
+		}
 
 		//Hidden layers & output layer
-		for (int layer = 0; layer < layers.size(); layer++)
+		for (int layer = 1; layer < layers.size(); layer++)
 		{
-			//Create a random value for each neuron
-			for (int n = 1; n < layers[layer]; n++)
+			//Create a random value for each hidden layer neuron
+			for (int n = 0; n < layers[layer]; n++)
 			{
 				netw[layer].push_back(Neuron(layers[layer - 1], distribution(generator)));
 			}
@@ -89,7 +93,7 @@ public:
 
 		LearningRate = e;
 
-		cout << "Network ready to go!\n";
+		cout << "Network ready to go!\n\n\n";
 	};
 
 	vector<double> GetOutput(vector<double> Input);
@@ -133,6 +137,7 @@ void Network::Learn(vector<double> inputs, vector<double> target)
 	{
 		SetReversed(false);
 		Calculated = GetOutput(inputs); //Forward propagation
+		cout << Calculated[0] << "\n";
 
 		//get the derivative of the activation (d_activation)
 		for (double out : Calculated)

@@ -33,18 +33,20 @@ int main()
 		double in2 = b2 ? 1.0 : 0.0;
 
 		bool expected = b1 != b2;
-		bool Calculated = AI.GetOutput(vector<double>{in1, in2})[0] != 0;
+		bool Calculated = round(AI.GetOutput(vector<double>{in1, in2})[0]) != 0;
+		double expected_d = expected ? 1.0 : 0.0; //Make a double from the 'expected' bool to use as input for AI
 
 		if (expected == Calculated)
 		{
 			correct++;
-			cout << "Calculated correct: " << correct << "\n";
+			cout << "Calculated correct: " << correct << "\n\n\n";
+			AI.Learn(vector<double>{in1, in2}, vector<double>{expected_d});
 		}
 		else
 		{
-			cout << "wrong ;-;\n";
+			cout << "wrong ;-;\n\n\n";
 			correct = 0;
-			AI.Learn(vector<double>{in1, in2}, (vector<double>)expected);
+			AI.Learn(vector<double>{in1, in2}, vector<double>{expected_d});
 		}
 
 	} while (correct < 10);

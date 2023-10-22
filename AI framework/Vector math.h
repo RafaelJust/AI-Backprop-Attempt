@@ -7,7 +7,7 @@ vector<double> Substract(vector<double> first, vector<double> second)
 	//Per-element substraction
 	for (int i = 0; i < first.size(); i++) //Both vectors must be the same
 	{
-		result[i] = first[i] - second[i];
+		result.push_back(first[i] - second[i]);
 	}
 
 	return result;
@@ -16,19 +16,19 @@ vector<double> Substract(vector<double> first, vector<double> second)
 vector<double> Multiply(vector<double> first, vector<double> second)
 {
 	vector<double> result;
-	if (sizeof(first) == sizeof(second))
+	if (first.size() == second.size())
 	{
 		//use Per-element multiplication for faster calculation
 		for (int i = 0; i < first.size(); i++)
 		{
-			result[i] = first[i] * second[i];
+			result.push_back(first[i] * second[i]);
 		}
 	}
 	else //vectors are not the same
 	{
 		vector<vector<double>> operands = { first,second }; //Use for easier handling
 		int smaller;
-		smaller = (min(sizeof(first), sizeof(second)) == sizeof(second)); //get the smallest vector
+		smaller = (min(first.size(), second.size()) == second.size()); //get the smallest vector
 
 		//multiply each value of the larger vector with all the values of the smaller ones
 		for (double a : operands[!smaller])
