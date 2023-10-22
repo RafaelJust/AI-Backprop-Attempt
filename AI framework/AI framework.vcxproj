@@ -129,7 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AI framework.cpp" />
-    <ClCompile Include="Network.h" />
+    <ClCompile Include="AI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vector math.h" />

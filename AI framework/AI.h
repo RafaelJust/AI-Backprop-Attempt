@@ -58,23 +58,30 @@ vector<double> GetLastActivations(vector<Neuron> neurons)
 	return result;
 }
 
+
 class Network
 {
 private:
 	double LearningRate;
 	bool reversed = false;
+
 public:
 	vector<vector<Neuron>> netw;
 	void SetReversed(bool rev);
 
-	Network(vector<int> layers, double e)
+	Network(vector<int> layers, double e, int InputSize)
 	{
 		netw.resize(layers.size());
+
 		//initialize network
+		//first layer
+		netw[0].push_back(Neuron(InputSize, distribution(generator)));
+
+		//Hidden layers & output layer
 		for (int layer = 0; layer < layers.size(); layer++)
 		{
 			//Create a random value for each neuron
-			for (int n = 0; n < layers[layer]; n++)
+			for (int n = 1; n < layers[layer]; n++)
 			{
 				netw[layer].push_back(Neuron(layers[layer - 1], distribution(generator)));
 			}
