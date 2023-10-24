@@ -15,6 +15,7 @@ vector<double> Substract(vector<double> first, vector<double> second)
 
 vector<double> Multiply(vector<double> first, vector<double> second)
 {
+	cout << "Vector Math!";
 	vector<double> result;
 	if (first.size() == second.size())
 	{

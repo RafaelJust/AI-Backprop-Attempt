@@ -11,9 +11,11 @@ uniform_real_distribution<double> distribution(-1, 1);
 
 class Neuron
 {
-public:
+private:
 	vector<double> weights;
 	double bias;
+public:
+
 	double Last_output;
 	Neuron(int LastLayerSize, double b) //initialisation of the neuron
 	{
@@ -29,6 +31,8 @@ public:
 	};
 
 	double Fire(vector<double> inputs);
+	vector<double> GetWeights();
+	void SetWaB(vector<double> w, double b);
 };
 
 double Neuron::Fire(vector<double> inputs)
@@ -44,6 +48,14 @@ double Neuron::Fire(vector<double> inputs)
 	Last_output = (1 / (1 + exp(-total)));
 	cout << "Firing neuron with total of " << total << ", and value " << Last_output << "\n";
 	return Last_output; //Use a sigmoid function to generate an output.
+}
+
+vector<double> Neuron::GetWeights() { return weights; }
+
+void Neuron::SetWaB(vector<double> w, double b) //set the weights and bias of the neuron
+{
+	weights = w;
+	bias = b;
 }
 
 vector<double> GetLastActivations(vector<Neuron> neurons)
@@ -160,11 +172,13 @@ void Network::Learn(vector<double> inputs, vector<double> target)
 		//apply the deltas to the current neuron
 		for (int neur = 0; neur < CurrentLayer.size(); neur++)
 		{
-			d_weights_output = Multiply(delta_output, Multiply(activation_previous_layer, CurrentLayer[neur].weights));
+			Neuron CurrNeur = CurrentLayer[neur]; //Get the current neuron
 
-			//multiply the biases and weights with the learning rate to make sure to have all the layes adjusted.r
-			CurrentLayer[neur].bias = d_biases_output[neur] * LearningRate;
-			CurrentLayer[neur].weights = Multiply(d_weights_output, (vector<double>)LearningRate);
+			d_weights_output = Multiply(delta_output, Multiply(activation_previous_layer, CurrNeur.GetWeights()));
+
+			// multiply the biases and weights with the learning rate to make sure to have all the layes adjusted
+			// and apply it to the neuron.
+			CurrNeur.SetWaB(Multiply(d_weights_output, (vector<double>)LearningRate), d_biases_output[neur] * LearningRate);
 		}
 
 		i++;
