@@ -132,10 +132,13 @@ vector<double> Network::GetOutput(vector<double> Input)
 
 void Network::Learn(vector<double> inputs, vector<double> target)
 {
-	//Set up vecotrs
-	vector<double> Calculated;
-	vector<double> d_error;
-	vector<double> d_activation;
+	//Set up vectors
+
+	vector<double> Calculated; //the current output
+
+	//derivatives
+	vector<double> d_error; // The amount the ouput needs to change to match the target
+	vector<double> d_activation; // 
 	vector<double> d_weights_output;
 	vector<double> d_biases_output;
 	vector<double> delta_output;
@@ -151,7 +154,14 @@ void Network::Learn(vector<double> inputs, vector<double> target)
 		Calculated = GetOutput(inputs); //Forward propagation
 		cout << Calculated[0] << "\n";
 
+		d_activation.clear();
 		//get the derivative of the activation (d_activation)
+		/*
+			ATTENTION!
+			---------
+			this code block is the reason the 'vector subscript out of range' doesn't work.
+			I need to do more research on pb and rewrite the whole algorithm ;-;
+		*/
 		for (double out : Calculated)
 		{
 			d_activation.push_back(out * (1 - out));
@@ -178,7 +188,7 @@ void Network::Learn(vector<double> inputs, vector<double> target)
 
 			// multiply the biases and weights with the learning rate to make sure to have all the layes adjusted
 			// and apply it to the neuron.
-			CurrNeur.SetWaB(Multiply(d_weights_output, (vector<double>)LearningRate), d_biases_output[neur] * LearningRate);
+			CurrNeur.SetWaB(Multiply(d_weights_output, vector<double>{LearningRate}), d_biases_output[neur] * LearningRate);
 		}
 
 		i++;
