@@ -181,9 +181,10 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 	vector<double> nextLayerError = error;
 
 	// Adjust weights and biases of each neuron starting from the output layer
-	for (int layer = static_cast<int>(netw.size()) - 1; layer >= 0; --layer) {
+	for (int layer = static_cast<int>(netw.size()) - 2; layer > 0; --layer) { // the -2 is because the last layer is the output layer, so skip it, and 0 is input layer, so ignore it
 		vector<double> delta; // Delta value for weight adjustment
 
+		cout << "--Backprop started on layer " << layer << "\n";
 		// Backpropagate the error to the current layer
 		vector<double> currentError;
 		for (int neuronIdx = 0; neuronIdx < netw[layer].size(); neuronIdx++) {
@@ -200,7 +201,7 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 		for (size_t neuronIdx = 0; neuronIdx < netw[layer].size(); ++neuronIdx) {
 			cout << "Busy adjusting values of weight [" << layer << "," << neuronIdx << "]\n";
 			// Calculate delta for the current neuron
-			double neuronOutput = layerOutputs[layer][neuronIdx];
+			double neuronOutput = layerOutputs[layer + 1][neuronIdx]; //correct the layer adjustments :/
 			double neuronDelta = neuronOutput * (1 - neuronOutput) * currentError[neuronIdx];
 			delta.push_back(neuronDelta);
 
@@ -221,15 +222,7 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 			cout << "Updated weight and biases! newBias: " << newBias << "\n\n";
 		}
 
-		// Calculate error for the previous layer
-		error.clear();
-		for (size_t neuronIdx = 0; neuronIdx < netw[layer].size(); ++neuronIdx) {
-			double neuronError = inner_product(delta.begin(), delta.end(),
-				netw[layer][neuronIdx].GetWeights().begin(), 0.0);
-			error.push_back(neuronError);
-		}
-
-		//save the current error to the nexterror vector fro use in the next layer
+		//save the current error to the nexterror vector for use in the next layer
 		nextLayerError = currentError;
 	}
 }

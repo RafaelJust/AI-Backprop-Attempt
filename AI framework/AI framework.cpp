@@ -4,7 +4,7 @@ using namespace std;
 
 //Network properties
 const int InputSize = 2;
-const vector<int> layers{ 2,4,2,1 }; //last layer is output layer
+const vector<int> layers{ 1,1 }; //last layer is output layer
 double lr = 0.01; //the learning rate
 
 int main()
@@ -32,10 +32,11 @@ int main()
 		double in1 = b1 ? 1.0 : 0.0;
 		double in2 = b2 ? 1.0 : 0.0;
 
-		bool expected = b1 != b2;
-		bool Calculated = round(AI.GetOutput(vector<double>{in1, in2})[0]) != 0;
+		bool expected = b1 == b2;
+		bool Calculated = AI.GetOutput(vector<double>{in1, in2})[0] < 0;
 		double expected_d = expected ? 1.0 : 0.0; //Make a double from the 'expected' bool to use as input for AI
 
+		cout << "expected: " << expected << ", calculated: " << Calculated << "\n";
 		if (expected == Calculated)
 		{
 			correct++;
@@ -47,6 +48,7 @@ int main()
 			cout << "wrong ;-;\n\n\n";
 			correct = 0;
 			AI.Learn(vector<double>{in1, in2}, vector<double>{expected_d});
+			cout << "Now it is " << (AI.GetOutput(vector<double>{in1, in2})[0] < 0) << "\n";
 		}
 
 	} while (correct < 10);
@@ -58,7 +60,7 @@ int main()
 		cin >> in1;
 		double in2;
 		cin >> in2;
-		cout << "Answer: " << AI.GetOutput(vector<double>{in1, in2})[0] << "!\n";
+		cout << "Answer: " << (AI.GetOutput(vector<double>{in1, in2})[0] < 0) << "!\n";
 	}
 
 }
