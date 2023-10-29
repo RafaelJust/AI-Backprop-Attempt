@@ -1,5 +1,17 @@
 #include <iostream>
+#include <string>
+#include <random>
 #include "AI.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+//Create random range for files
+int test_set_start = 11500; //when the test set starts.
+uniform_real_distribution<int> randfile(0,test_set_start - 1);
+uniform_real_distribution<int> coinflip(0, 1);
+
+
 using namespace std;
 
 //Network properties
@@ -7,10 +19,23 @@ const int InputSize = 2;
 const vector<int> layers{ 1,1 }; //last layer is output layer
 double lr = 0.01; //the learning rate
 
+//image loading properties
+string dataset_path = "C:/Users/justr/Desktop/School/PWS/Datasets/Cats n dogs";
+const int img_amount = 12498;
+const vector<string> second_path = { "dog (", "cat (" };
+
+vector<int> GetImage(bool cat, int filenum)
+{
+	int width, height, bpp; //Unused, but required for the stb to work (acts as output)
+	string img_path = dataset_path + (cat ? "/Cat/cat (" : "/Dog/dog (") + to_string(filenum) + ").jpg";
+	unsigned char* data = stbi_load(dataset_path, &width, &height, 3);
+	// Need to change string to char here ^
+}
+
 int main()
 {
 	int correct = 0;
-	cout << "Start!\n";
+	cout << "Start!/n";
 	Network AI(layers, InputSize, lr);
 
 	/*
