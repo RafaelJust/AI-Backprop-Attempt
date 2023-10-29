@@ -1,7 +1,6 @@
 #include <iostream>
 #include <random>
 #include <vector>
-#include "Vector math.h"
 #include <numeric>
 #include <math.h>
 
@@ -179,29 +178,47 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 		double output = layerOutput[i];
 		error.push_back(expectedOutput[i] - output);
 	}
+	vector<double> nextLayerError = error;
 
 	// Adjust weights and biases of each neuron starting from the output layer
 	for (int layer = static_cast<int>(netw.size()) - 1; layer >= 0; --layer) {
 		vector<double> delta; // Delta value for weight adjustment
 
+		// Backpropagate the error to the current layer
+		vector<double> currentError;
+		for (int neuronIdx = 0; neuronIdx < netw[layer].size(); neuronIdx++) {
+			double neuronError = 0.0;
+			for (int nextNeuronIdx = 0; nextNeuronIdx < netw[layer + 1].size(); nextNeuronIdx++) {
+				double weightedError = nextLayerError[nextNeuronIdx] * netw[layer][neuronIdx].GetWeights()[nextNeuronIdx];
+				neuronError += weightedError;
+			}
+			neuronError *= layerOutputs[layer + 1][neuronIdx] * (1 - layerOutputs[layer + 1][neuronIdx]); // Apply the derivative of the activation function
+			currentError.push_back(neuronError);
+		}
+
+		cout << "Current Layer size: " << netw[layer].size() << "\n";
 		for (size_t neuronIdx = 0; neuronIdx < netw[layer].size(); ++neuronIdx) {
+			cout << "Busy adjusting values of weight [" << layer << "," << neuronIdx << "]\n";
 			// Calculate delta for the current neuron
 			double neuronOutput = layerOutputs[layer][neuronIdx];
-			double neuronDelta = neuronOutput * (1 - neuronOutput) * error[neuronIdx];
+			double neuronDelta = neuronOutput * (1 - neuronOutput) * currentError[neuronIdx];
 			delta.push_back(neuronDelta);
 
 			// Get weights of the current neuron
 			vector<double> weights = netw[layer][neuronIdx].GetWeights();
+			cout << "weights.size() = " << weights.size() << "\n";
 
 			// Update weights and bias of the current neuron
 			vector<double> newWeights;
 			for (size_t weightIdx = 0; weightIdx < weights.size(); ++weightIdx) {
-				double newWeight = weights[weightIdx] + learningRate * neuronDelta * layerOutputs[layer - 1][weightIdx];
+				double newWeight = weights[weightIdx] + learningRate * neuronDelta * layerOutputs[layer][weightIdx];
 				newWeights.push_back(newWeight);
+				cout << "newWeights.size() = " << newWeights.size() << "\n";
 			}
 
 			double newBias = netw[layer][neuronIdx].GetBias() + learningRate * neuronDelta;
 			netw[layer][neuronIdx].SetWaB(newWeights, newBias);
+			cout << "Updated weight and biases! newBias: " << newBias << "\n\n";
 		}
 
 		// Calculate error for the previous layer
@@ -211,5 +228,8 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 				netw[layer][neuronIdx].GetWeights().begin(), 0.0);
 			error.push_back(neuronError);
 		}
+
+		//save the current error to the nexterror vector fro use in the next layer
+		nextLayerError = currentError;
 	}
 }
