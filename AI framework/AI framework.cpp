@@ -5,14 +5,14 @@ using namespace std;
 //Network properties
 const int InputSize = 2;
 const vector<int> layers{ 2,4,2,1 }; //last layer is output layer
-const double e = 0.5; //the learning rate of the network
+double lr = 0.01; //the learning rate
 
 int main()
 {
 	int correct = 0;
-	cout << "Start\n";
-	Network AI(layers, e, InputSize);
-	
+	cout << "Start!\n";
+	Network AI(layers, InputSize, lr);
+
 	/*
 	Trying to learn a XOR - operation:
 	| 0 | 0 | 0 |
