@@ -30,32 +30,31 @@ public:
 	{
 		
 		//generate random weights
-		for (int i = 0; i < NextLayerSize; i++)
+		for (int weight = 0; weight < NextLayerSize; weight++)
 		{
 			weights.push_back(distribution(generator));
 		}
 
 		bias = b;
 		output = 0;
-		cout << "Neuron created with bias " << b << "\n";
+		cout << "Neuron created with " << weights.size() << " weights\n";
 	};
 
-	double Fire(vector<double> inputs);
+	double Fire(vector<double> inputs, int neuronIdx, vector<Neuron> prevNeur);
 };
 
-double Neuron::Fire(vector<double> inputs)
+double Neuron::Fire(vector<double> inputs, int neuronIdx, vector<Neuron> prevNeur)
 {
 	//add all the weights and previous outputs into the total function
 	double total = 0;
 	for (int i = 0; i < inputs.size(); i++)
 	{
-		total += inputs[i] * weights[i];
+		total += inputs[i] * prevNeur[i].weights[neuronIdx];
 	}
 	input = total;
 	total += bias;
-	output = tanh(total);
-	//cout << "Firing neuron with total of " << total << ", and value " << output << "\n";
-	return output; //Use a sigmoid function to generate an output.
+	output = tanh(total); //use a tanh function to generate an output
+	return output;
 }
 
 
@@ -77,24 +76,25 @@ public:
 		//Input & Hidden layers
 		for (int layer = 0; layer < layers.size() - 1; layer++)
 		{
+			cout << "Layer " << layer << " with size = " <<  layers[layer] << "and weight amount " << layers[layer + 1] << ":\n";
 			//Create a random value for each hidden layer neuron
 			for (int n = 0; n < layers[layer]; n++)
 			{
 				netw[layer].push_back(Neuron(layers[layer + 1], distribution(generator)));
 			}
+			cout << " \n";
 		}
 
 		//Output neurons
-		for (int n = 0; n < layers[0]; n++)
+		for (int n = 0; n < layers[layers.size() - 1]; n++)
 		{
-			netw[0].push_back(Neuron(0, distribution(generator)));
+			netw[layers.size() - 1].push_back(Neuron(0, distribution(generator)));
 		}
 
 		cout << "Network ready to go!\n\n\n";
 	};
 
 	vector<double> GetOutput(vector<double> Input);
-	vector<double> ActivationFunction(vector<double> in);
 	void Learn(const vector<double>& input, const vector<double>& expectedOutput);
 };
 
@@ -102,31 +102,23 @@ vector<double> Network::GetOutput(vector<double> Input)
 {
 	Outputs.clear();
 	vector<double> previous = Input;
+	vector<Neuron> previousLayer = netw[Input[0]];
 	vector<double> Curr;
 
 	for (vector<Neuron> layer : netw)
 	{
 		//fill in the current vector with the outputs of the neurons in that layer
 		Curr.clear();
-		for (Neuron n : layer)
+		for (int neuronIdx = 0; neuronIdx < layer.size(); ++neuronIdx)
 		{
-			Curr.push_back(n.Fire(previous));
+			Curr.push_back(layer[neuronIdx].Fire(previous, neuronIdx, previousLayer));
 		}
 		Outputs.push_back(Curr); //Add the output of the layer to the outputs vector
-		previous = Curr; //use result for next input
+		//use result and layer for next input
+		previous = Curr;
+		previousLayer = layer;
 	}
 	return Curr;
-}
-
-vector<double> Network::ActivationFunction(vector<double> input)
-{
-	vector<double> result;
-	//calculates the output of the current layer
-	for (double i : input)
-	{
-		result.push_back(tanh(i));
-	}
-	return result;
 }
 
 void Network::Learn(const vector<double>& input, const vector<double>& expectedOutput) {
@@ -176,7 +168,7 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 		{
 			for (int synapse = 0; synapse < netw[layer + 1].size(); synapse++)
 			{
-				netw[layer][neuronIdx].weights[synapse] -= learningRate * dC_dW[synapse];
+				netw[layer][neuronIdx].weights[synapse] -= learningRate * dC_dW[layer][neuronIdx][synapse];
 			}
 		}
 	}
