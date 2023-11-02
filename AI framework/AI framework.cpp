@@ -14,7 +14,7 @@ int main()
 {
 	int correct = 0;
 	cout << "Start!/n";
-	Network AI(layers, InputSize, lr);
+	Network AI(layers, lr);
 
 	// prepare XOR training data
 	double data[][4] = {
