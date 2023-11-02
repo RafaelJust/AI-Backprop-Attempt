@@ -40,16 +40,23 @@ public:
 		cout << "Neuron created with " << weights.size() << " weights\n";
 	};
 
-	double Fire(vector<double> inputs, int neuronIdx, vector<Neuron> prevNeur);
+	double Fire(vector<double> inputs, int neuronIdx, vector<Neuron> prevNeur, bool IsInput);
 };
 
-double Neuron::Fire(vector<double> inputs, int neuronIdx, vector<Neuron> prevNeur)
+double Neuron::Fire(vector<double> inputs, int neuronIdx, vector<Neuron> prevNeur, bool IsInput = false)
 {
 	//add all the weights and previous outputs into the total function
 	double total = 0;
+	
 	for (int i = 0; i < inputs.size(); i++)
 	{
-		total += inputs[i] * prevNeur[i].weights[neuronIdx];
+		if (IsInput)
+		{
+			total += inputs[i];
+		}
+		else {
+			total += inputs[i] * prevNeur[i].weights[neuronIdx];
+		}
 	}
 	input = total;
 	total += bias;
@@ -105,18 +112,20 @@ vector<double> Network::GetOutput(vector<double> Input)
 	vector<Neuron> previousLayer = netw[Input[0]];
 	vector<double> Curr;
 
+	bool IsInput = true; //Make sure the input layer doesn't try to get any weights.
 	for (vector<Neuron> layer : netw)
 	{
 		//fill in the current vector with the outputs of the neurons in that layer
 		Curr.clear();
 		for (int neuronIdx = 0; neuronIdx < layer.size(); ++neuronIdx)
 		{
-			Curr.push_back(layer[neuronIdx].Fire(previous, neuronIdx, previousLayer));
+			Curr.push_back(layer[neuronIdx].Fire(previous, neuronIdx, previousLayer, IsInput));
 		}
 		Outputs.push_back(Curr); //Add the output of the layer to the outputs vector
 		//use result and layer for next input
 		previous = Curr;
 		previousLayer = layer;
+		IsInput = false; //
 	}
 	return Curr;
 }
