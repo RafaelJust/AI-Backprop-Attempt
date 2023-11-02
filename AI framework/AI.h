@@ -4,11 +4,19 @@
 #include <numeric>
 #include <math.h>
 
+// Sym: i -> input in neuron; o -> output of neuron; C -> Cost function; W -> weights
+// Sym: delta -> dC/dz
+
 using namespace std;
 
 //Setup of the random generator
 default_random_engine generator;
 uniform_real_distribution<double> distribution(-1, 1);
+
+double da_dz(double z)
+{
+	return tanh(z) * (1.0f - tanh(z));
+}
 
 class Neuron
 {
@@ -16,10 +24,12 @@ private:
 	vector<double> weights;
 	double bias;
 public:
+	double input;
+	double output;
 
-	double Last_output;
 	Neuron(int LastLayerSize, double b) //initialisation of the neuron
 	{
+		
 		//generate random weights
 		for (int i = 0; i < LastLayerSize; i++)
 		{
@@ -27,7 +37,7 @@ public:
 		}
 
 		bias = b;
-		Last_output = 0;
+		output = 0;
 		cout << "Neuron created with bias " << b << "\n";
 	};
 
@@ -47,11 +57,11 @@ double Neuron::Fire(vector<double> inputs)
 	{
 		total += inputs[i] * weights[i];
 	}
-
+	input = total;
 	total += bias;
-	Last_output = tanh(total);
-	//cout << "Firing neuron with total of " << total << ", and value " << Last_output << "\n";
-	return Last_output; //Use a sigmoid function to generate an output.
+	output = tanh(total);
+	//cout << "Firing neuron with total of " << total << ", and value " << output << "\n";
+	return output; //Use a sigmoid function to generate an output.
 }
 
 vector<double> Neuron::GetWeights() { return weights; }
@@ -63,24 +73,13 @@ void Neuron::SetWaB(vector<double> w, double b) //set the weights and bias of th
 	bias = b;
 }
 
-vector<double> GetLastActivations(vector<Neuron> neurons)
-{
-	vector<double> result;
-	//Get the last output of all the neurons in the vector and add them to a list
-	for (Neuron n : neurons)
-	{
-		result.push_back(n.Last_output);
-	}
-
-	return result;
-}
-
 
 class Network
 {
 public:
 	double learningRate;
 	vector<vector<Neuron>> netw;
+	vector<vector<double>> Outputs;
 
 	Network(vector<int> layers, int InputSize, double lr)
 	{
@@ -116,6 +115,7 @@ public:
 
 vector<double> Network::GetOutput(vector<double> Input)
 {
+	Outputs.clear();
 	vector<double> previous = Input;
 	vector<double> Curr;
 
@@ -127,6 +127,7 @@ vector<double> Network::GetOutput(vector<double> Input)
 		{
 			Curr.push_back(n.Fire(previous));
 		}
+		Outputs.push_back(Curr); //Add the output of the layer to the outputs vector
 		previous = Curr; //use result for next input
 	}
 	return Curr;
@@ -144,82 +145,36 @@ vector<double> Network::ActivationFunction(vector<double> input)
 }
 
 void Network::Learn(const vector<double>& input, const vector<double>& expectedOutput) {
-	// Feedforward
-	vector<double> layerOutput = input; // Output of the current layer
-	vector<vector<double>> layerOutputs; // Store outputs of all layers
-	layerOutputs.push_back(layerOutput);
-
-	for (size_t layer = 0; layer < netw.size(); ++layer) {
-		vector<double> layerInput; // Input to the current layer
-
-		// Calculate input to the current layer
-		for (Neuron neuron : netw[layer]) {
-			// Get weights of the neuron
-			vector<double> weights = neuron.GetWeights();
-
-			// Multiply neuron outputs with corresponding weights and add them up
-			double neuronInput = inner_product(layerOutput.begin(), layerOutput.end(),
-				weights.begin(), 0.0);
-
-			// Add bias
-			neuronInput += neuron.GetBias();
-
-			layerInput.push_back(neuronInput);
-		}
-
-		// Calculate output of the current layer using activation function
-		layerOutput = ActivationFunction(layerInput);
-		layerOutputs.push_back(layerOutput);
-	}
-
 	// Backpropagation
-	vector<double> error; // Error at the output layer
-	for (size_t i = 0; i < expectedOutput.size(); ++i) {
-		double output = layerOutput[i];
-		error.push_back(expectedOutput[i] - output);
-	}
-	vector<double> nextLayerError = error;
+	vector<vector<double>> dC_do(netw.size()); //Derivative of the cost function wrt output of the neuron
+	vector<vector<double>> dC_di(netw.size()); //Derivative of the cost function wrt input of the neuron
+	vector<vector<double>> dC_dW(netw.size()); //Derivative of the cost function wrt weights
 
-	// Adjust weights and biases of each neuron starting from the output layer
+	// Calculate derivatives starting from the output layer
 	for (int layer = static_cast<int>(netw.size()) - 1; layer >= 0; --layer) { // the -2 is because the last layer is the output layer, so skip it, and 0 is input layer, so ignore it
-		vector<double> delta; // Delta value for weight adjustment
+		auto temp_layer = netw[layer];
 
-		// Backpropagate the error to the current layer
-		vector<double> currentError;
-		for (int neuronIdx = 0; neuronIdx < netw[layer].size(); neuronIdx++) {
-			double neuronError = 0.0;
-			for (int nextNeuronIdx = 0; nextNeuronIdx < netw[(layer + 1)].size(); nextNeuronIdx++) {
-				double weightedError = nextLayerError[nextNeuronIdx] * netw[layer][neuronIdx].GetWeights()[nextNeuronIdx];
-				neuronError += weightedError;
-			}
-			neuronError *= layerOutputs[layer + 1][neuronIdx] * (1 - layerOutputs[layer + 1][neuronIdx]); // Apply the derivative of the activation function
-			currentError.push_back(neuronError);
-		}
-
-		//cout << "Current Layer size: " << netw[layer].size() << "\n";
+		//Calculate dC_do
 		for (size_t neuronIdx = 0; neuronIdx < netw[layer].size(); ++neuronIdx) {
-			//cout << "Busy adjusting values of weight [" << layer << "," << neuronIdx << "]\n";
-			// Calculate delta for the current neuron
-			double neuronOutput = layerOutputs[layer + 1][neuronIdx]; //correct the layer adjustments :/
-			double neuronDelta = neuronOutput * (1 - neuronOutput) * currentError[neuronIdx];
-			delta.push_back(neuronDelta);
+			if (layer == netw.size() - 1) //Output layer
+			{
+				dC_do[layer].push_back(temp_layer[neuronIdx].output - expectedOutput[neuronIdx]);
+			}
+			else { //Hidden and input layers
+				double temp_dC_do = 0;
+				int nxt_l = layer + 1;
 
-			// Get weights of the current neuron
-			vector<double> weights = netw[layer][neuronIdx].GetWeights();
-
-			// Update weights and bias of the current neuron
-			vector<double> newWeights;
-			for (size_t weightIdx = 0; weightIdx < weights.size(); ++weightIdx) {
-				double newWeight = weights[weightIdx] + learningRate * neuronDelta * layerOutputs[layer][weightIdx];
-				newWeights.push_back(newWeight);
+				for (int Synapse = 0; Synapse < netw[nxt_l].size(); ++Synapse)
+				{
+					double CurrW = temp_layer[neuronIdx].GetWeights()[Synapse];
+					temp_dC_do += CurrW * dC_di[nxt_l][Synapse];
+					dC_dW[neuronIdx].push_back(temp_layer[neuronIdx].output * dC_di[nxt_l][Synapse]);
+				}
+				dC_do[layer].push_back(temp_dC_do);
 			}
 
-			double newBias = (netw[layer][neuronIdx].GetBias() + learningRate) * neuronDelta;
-			netw[layer][neuronIdx].SetWaB(newWeights, newBias);
-			cout << "Updated weight and biases! newBias: " << newBias << "\n\n";
+			
+			dC_di[layer].push_back(da_dz(temp_));
 		}
-
-		//save the current error to the nexterror vector for use in the next layer
-		nextLayerError = currentError;
 	}
 }
