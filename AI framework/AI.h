@@ -50,7 +50,7 @@ double Neuron::Fire(vector<double> inputs)
 
 	total += bias;
 	Last_output = tanh(total);
-	cout << "Firing neuron with total of " << total << ", and value " << Last_output << "\n";
+	//cout << "Firing neuron with total of " << total << ", and value " << Last_output << "\n";
 	return Last_output; //Use a sigmoid function to generate an output.
 }
 
@@ -181,15 +181,14 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 	vector<double> nextLayerError = error;
 
 	// Adjust weights and biases of each neuron starting from the output layer
-	for (int layer = static_cast<int>(netw.size()) - 2; layer > 0; --layer) { // the -2 is because the last layer is the output layer, so skip it, and 0 is input layer, so ignore it
+	for (int layer = static_cast<int>(netw.size()) - 1; layer >= 0; --layer) { // the -2 is because the last layer is the output layer, so skip it, and 0 is input layer, so ignore it
 		vector<double> delta; // Delta value for weight adjustment
 
-		cout << "--Backprop started on layer " << layer << "\n";
 		// Backpropagate the error to the current layer
 		vector<double> currentError;
 		for (int neuronIdx = 0; neuronIdx < netw[layer].size(); neuronIdx++) {
 			double neuronError = 0.0;
-			for (int nextNeuronIdx = 0; nextNeuronIdx < netw[layer + 1].size(); nextNeuronIdx++) {
+			for (int nextNeuronIdx = 0; nextNeuronIdx < netw[(layer + 1)].size(); nextNeuronIdx++) {
 				double weightedError = nextLayerError[nextNeuronIdx] * netw[layer][neuronIdx].GetWeights()[nextNeuronIdx];
 				neuronError += weightedError;
 			}
@@ -197,9 +196,9 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 			currentError.push_back(neuronError);
 		}
 
-		cout << "Current Layer size: " << netw[layer].size() << "\n";
+		//cout << "Current Layer size: " << netw[layer].size() << "\n";
 		for (size_t neuronIdx = 0; neuronIdx < netw[layer].size(); ++neuronIdx) {
-			cout << "Busy adjusting values of weight [" << layer << "," << neuronIdx << "]\n";
+			//cout << "Busy adjusting values of weight [" << layer << "," << neuronIdx << "]\n";
 			// Calculate delta for the current neuron
 			double neuronOutput = layerOutputs[layer + 1][neuronIdx]; //correct the layer adjustments :/
 			double neuronDelta = neuronOutput * (1 - neuronOutput) * currentError[neuronIdx];
@@ -207,17 +206,15 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 
 			// Get weights of the current neuron
 			vector<double> weights = netw[layer][neuronIdx].GetWeights();
-			cout << "weights.size() = " << weights.size() << "\n";
 
 			// Update weights and bias of the current neuron
 			vector<double> newWeights;
 			for (size_t weightIdx = 0; weightIdx < weights.size(); ++weightIdx) {
 				double newWeight = weights[weightIdx] + learningRate * neuronDelta * layerOutputs[layer][weightIdx];
 				newWeights.push_back(newWeight);
-				cout << "newWeights.size() = " << newWeights.size() << "\n";
 			}
 
-			double newBias = netw[layer][neuronIdx].GetBias() + learningRate * neuronDelta;
+			double newBias = (netw[layer][neuronIdx].GetBias() + learningRate) * neuronDelta;
 			netw[layer][neuronIdx].SetWaB(newWeights, newBias);
 			cout << "Updated weight and biases! newBias: " << newBias << "\n\n";
 		}
