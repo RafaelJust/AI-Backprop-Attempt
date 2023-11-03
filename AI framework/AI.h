@@ -3,6 +3,7 @@
 #include <vector>
 #include <numeric>
 #include <math.h>
+#include <algorithm>
 
 // Sym: i -> input in neuron; o -> output of neuron; C -> Cost function; W -> weights
 // Sym: delta -> dC/dz
@@ -52,7 +53,8 @@ double Neuron::Fire(vector<double> inputs, int neuronIdx, vector<Neuron> prevNeu
 	{
 		if (IsInput)
 		{
-			total += inputs[i];
+			//The input layer does not hve any weigthts, so ignore them.
+			total = inputs[neuronIdx];
 		}
 		else {
 			total += inputs[i] * prevNeur[i].weights[neuronIdx];
@@ -137,11 +139,11 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 	vector<vector<vector<double>>> dC_dW(netw.size()); //Derivative of the cost function wrt weights
 
 	// Calculate derivatives starting from the output layer
-	for (int layer = static_cast<int>(netw.size()) - 1; layer >= 0; --layer) { // the -2 is because the last layer is the output layer, so skip it, and 0 is input layer, so ignore it
+	for (int layer = static_cast<int>(netw.size()) - 1; layer >= 0; --layer) { //loop throug the network in reverse order
 		auto temp_layer = netw[layer];
-		vector<vector<double>> temp_dC_dW;
+		vector<vector<double>> temp_dC_dW(temp_layer.size() + 1);
 		//Calculate dC_do and dC_dW
-		for (size_t neuronIdx = 0; neuronIdx < netw[layer].size(); ++neuronIdx) {
+		for (size_t neuronIdx = 0; neuronIdx < temp_layer.size(); ++neuronIdx) {
 			if (layer == netw.size() - 1) //Output layer
 			{
 				dC_do[layer].push_back(temp_layer[neuronIdx].output - expectedOutput[neuronIdx]);
@@ -164,13 +166,17 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 				dC_do[layer].push_back(temp_dC_do);
 				dC_dW.push_back(temp_dC_dW);
 			}
-
 			
 			dC_di[layer].push_back(da_dz(temp_layer[neuronIdx].input) * dC_do[layer][neuronIdx]);
 		}
 	}
 
-	 //Adjust the weights
+	//reverse the dC vectors
+	reverse(dC_do.begin(), dC_do.end());
+	reverse(dC_di.begin(), dC_di.end());
+	reverse(dC_dW.begin(), dC_dW.end());
+
+	//Adjust the weights
 	for (int layer = 0; layer < netw.size() - 1; ++layer)
 	{
 		for (int neuronIdx = 0; neuronIdx < netw[layer].size(); ++neuronIdx)
