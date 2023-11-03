@@ -14,9 +14,36 @@ using namespace std;
 default_random_engine generator;
 uniform_real_distribution<double> distribution(-1, 1);
 
-double da_dz(double z)
+//These functions are used for the activation of a neuron
+double sigmoid(double x) {
+	return 1.0f / (1.0f + exp(-x));
+}
+
+double relu(double x) {
+	if (x < 0.0f) {
+		return 0;
+	}
+	else return x;
+}
+
+double Activate(double in, string activation_type = "sigmoid")
 {
-	return tanh(z) * (1.0f - tanh(z));
+	double result;
+
+	if (activation_type == "relu") result = relu(in);
+	else result = sigmoid(in);
+	
+	return result;
+}
+
+//Derivative of node output wrt input
+double da_dz(double z, std::string activation_type = "sigmoid") {
+	if (activation_type == "relu") {
+		if (z <= 0.0f)
+			return 0.0f;
+		else return 1.0f;
+	}
+	return sigmoid(z) * (1.0f - sigmoid(z));
 }
 
 class Neuron
@@ -24,12 +51,13 @@ class Neuron
 public:
 	vector<double> weights;
 	double bias;
-	double input;
+	double input = 0.0;
 	double output;
+	string activation_type;
 
-	Neuron(int NextLayerSize, double b) //initialisation of the neuron
+	Neuron(int NextLayerSize, double b, string ac) //initialisation of the neuron
 	{
-		
+
 		//generate random weights
 		for (int weight = 0; weight < NextLayerSize; weight++)
 		{
@@ -38,6 +66,8 @@ public:
 
 		bias = b;
 		output = 0;
+		activation_type = ac;
+
 		cout << "Neuron created with " << weights.size() << " weights\n";
 	};
 
@@ -48,13 +78,13 @@ double Neuron::Fire(vector<double> inputs, int neuronIdx, vector<Neuron> prevNeu
 {
 	//add all the weights and previous outputs into the total function
 	double total = 0;
-	
+
 	for (int i = 0; i < inputs.size(); i++)
 	{
 		if (IsInput)
 		{
 			//The input layer does not hve any weigthts, so ignore them.
-			total = inputs[neuronIdx];
+			total += inputs[neuronIdx];
 		}
 		else {
 			total += inputs[i] * prevNeur[i].weights[neuronIdx];
@@ -62,7 +92,9 @@ double Neuron::Fire(vector<double> inputs, int neuronIdx, vector<Neuron> prevNeu
 	}
 	input = total;
 	total += bias;
-	output = tanh(total); //use a tanh function to generate an output
+	
+	output = Activate(total, activation_type);
+
 	return output;
 }
 
@@ -85,11 +117,11 @@ public:
 		//Input & Hidden layers
 		for (int layer = 0; layer < layers.size() - 1; layer++)
 		{
-			cout << "Layer " << layer << " with size = " <<  layers[layer] << "and weight amount " << layers[layer + 1] << ":\n";
+			cout << "Layer " << layer << " with size = " << layers[layer] << "and weight amount " << layers[layer + 1] << ":\n";
 			//Create a random value for each hidden layer neuron
 			for (int n = 0; n < layers[layer]; n++)
 			{
-				netw[layer].push_back(Neuron(layers[layer + 1], distribution(generator)));
+				netw[layer].push_back(Neuron(layers[layer + 1], distribution(generator), "relu"));
 			}
 			cout << " \n";
 		}
@@ -97,7 +129,7 @@ public:
 		//Output neurons
 		for (int n = 0; n < layers[layers.size() - 1]; n++)
 		{
-			netw[layers.size() - 1].push_back(Neuron(0, distribution(generator)));
+			netw[layers.size() - 1].push_back(Neuron(0, distribution(generator), "sigmoid"));
 		}
 
 		cout << "Network ready to go!\n\n\n";
@@ -136,7 +168,7 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 	// Backpropagation
 	vector<vector<double>> dC_do(netw.size()); //Derivative of the cost function wrt output of the neuron
 	vector<vector<double>> dC_di(netw.size()); //Derivative of the cost function wrt input of the neuron
-	vector<vector<vector<double>>> dC_dW(netw.size()); //Derivative of the cost function wrt weights
+	vector<vector<vector<double>>> dC_dW; //Derivative of the cost function wrt weights
 
 	// Calculate derivatives starting from the output layer
 	for (int layer = static_cast<int>(netw.size()) - 1; layer >= 0; --layer) { //loop throug the network in reverse order
@@ -162,13 +194,16 @@ void Network::Learn(const vector<double>& input, const vector<double>& expectedO
 					temp_dC_dW[neuronIdx].push_back(temp_layer[neuronIdx].output * dC_di[nxt_l][Synapse]);
 				}
 
-				//Apply the fnal values
+				//Apply the final value of temp_dC_do
 				dC_do[layer].push_back(temp_dC_do);
-				dC_dW.push_back(temp_dC_dW);
 			}
-			
+
+			//Calculate dervative of the input
 			dC_di[layer].push_back(da_dz(temp_layer[neuronIdx].input) * dC_do[layer][neuronIdx]);
 		}
+
+		//Apply the final value of temp_dC_dW
+		dC_dW.push_back(temp_dC_dW);
 	}
 
 	//reverse the dC vectors

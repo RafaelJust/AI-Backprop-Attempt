@@ -11,7 +11,7 @@ uniform_real_distribution<double> xorSelection(0, 7);
 //Network properties
 const int InputSize = 2;
 const vector<int> layers{ 2,4,2,1 }; //last layer is output layer
-double lr = 0.1; //the learning rate
+double lr = 1; //the learning rate
 
 int main()
 {
@@ -34,7 +34,7 @@ int main()
 
 	//training
 	cout << "Starting training!";
-	for (int epoch = 0; epoch < 200; epoch++)
+	for (int epoch = 0; epoch < 5000; epoch++)
 	{
 		int chosenproblem = round(xorSelection(generator)); //get a random number between 0 and 7
 		vector<double> in;
@@ -48,7 +48,7 @@ int main()
 		AI.GetOutput(in); //Feed forward
 
 		AI.Learn(in, out);
-		if (epoch % 50 == 0)
+		if (epoch % 500 == 0)
 		{
 			cout << "Completed epoch " << epoch << " \n";
 		}
